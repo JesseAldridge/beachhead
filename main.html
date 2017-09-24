@@ -1,0 +1,76 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.6/vue.min.js"></script>
+
+<script type="text/x-template" id="beach-node-template">
+  <div>
+    <input type="text"
+      v-model="beach_node.name"
+      @keydown.enter="insert_sibling"
+      @keydown.tab="indent"
+      @blur.stop="do_nothing">
+    <beach-node
+      style="padding-left:7px"
+      class="beach-node"
+      v-for="beach_node in beach_node.children"
+      :beach_node="beach_node">
+    </beach-node>
+  </div>
+</script>
+
+<div id="main">
+  <beach-node
+    class="beach-node"
+    v-for="beach_node in root_nodes"
+    :beach_node="beach_node">
+  </beach-node>
+</div>
+
+<script type="text/javascript">
+var root_nodes = [
+  {
+    beach_id: Math.random(),
+    text: '',
+    children: []
+  }
+]
+
+Vue.component('beach-node', {
+  template: '#beach-node-template',
+  props: {
+    beach_node: Object
+  },
+  methods: {
+    do_nothing: function() {},
+    insert_sibling: function() {
+      let parent = this.$parent,
+          node_list = parent.beach_node ? parent.beach_node.children : parent.root_nodes
+      console.log('node_list:', node_list)
+      for(var i = 0; i < node_list.length; i++)
+        if(node_list[i].beach_id == this.beach_node.beach_id) {
+          node_list.splice(i + 1, 0, {
+            text: 'bar ' + Math.round(Math.random() * 100), children: [], beach_id: Math.random()
+          })
+          return
+        }
+    },
+    indent: function(event) {
+      event.preventDefault()
+      let parent = this.$parent,
+          node_list = parent.beach_node ? parent.beach_node.children : parent.root_nodes
+      console.log('node_list:', node_list)
+      for(var i = 1; i < node_list.length; i++)
+        if(node_list[i].beach_id == this.beach_node.beach_id) {
+          node_list.splice(i, 1)
+          node_list[i - 1].children.push(this.beach_node)
+          return
+        }
+    }
+  }
+})
+
+var main = new Vue({
+  el: '#main',
+  data: {
+    root_nodes: root_nodes
+  }
+})
+</script>
